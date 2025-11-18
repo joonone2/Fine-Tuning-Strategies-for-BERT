@@ -1,165 +1,136 @@
-아래는 바로 GitHub README.md에 붙여넣을 수 있는 최종 버전이다.
-Markdown 형식을 깔끔하게 정리했고, 중요한 부분은 적절히 굵게 강조해두었다.
+# BERT Fine-Tuning Strategies for SST-2
 
-⸻
+본 프로젝트는 **BERT 기반 감정 분류(SST-2)** 문제를 대상으로, 다양한 **파인튜닝(Fine-Tuning)** 전략을 비교한 연구 프로젝트입니다.  
+모든 실험은 동일한 **BERT-base-uncased 백본**, **동일한 데이터 분할 (Train/Validation/Test = 8:1:1)**, **동일한 평가 지표**를 사용하여 공정하게 비교하였습니다.
 
-Fine-Tuning Strategies for BERT on SST-2
+------------------------------------------------------------
 
-본 프로젝트는 **BERT 기반 문장 감정 분류(SST-2)**를 대상으로 여러 파인튜닝(Fine-Tuning) 방식을 비교하고, 각 기법의 효율성·성능·학습 파라미터 수를 실험적으로 분석하는 것을 목표로 한다.
+## 1. 비교한 Fine-Tuning 기법
 
-모든 실험은 동일한 데이터셋(SST-2), 동일한 데이터 분할(Train 8:1:1 → Train/Validation/Test), 동일한 평가 지표(Accuracy, Precision, Recall, F1-score)를 사용한다.
-또한 모든 실험은 동일한 bert-base-uncased 백본을 사용한다.
+아래는 본 프로젝트에서 실험한 파인튜닝 방식과 각 모델의 **학습 가능한 파라미터 수(Trainable Params)** 정리입니다.
 
-⸻
+Model ID | Backbone | Tuning Strategy | Trainable Params
+-------- | -------- | --------------- | ------------------------------
+M1 | bert-base-uncased | Head-only (CLS Linear Only) | 1,538 / 109,483,778 (0.0014%)
+M2 | bert-base-uncased | Full Fine-tuning | 109,483,778 / 109,483,778 (100%)
+M3 | bert-base-uncased | Partial FT (Top-4 layers) | 28,353,026 / 109,483,778 (25.897%)
+M4 | bert-base-uncased | BitFit (Bias-only Tuning) | 102,914 / 109,483,778 (0.094%)
+M5 | bert-base-uncased | LoRA (r = 4 / 8 / 16) | 약 0.1% ~ 1%
 
-1. 비교한 Fine-Tuning 기법
 
-아래는 본 프로젝트에서 비교한 5가지 파인튜닝 전략과 학습되는 파라미터 수이다.
 
-Model ID	Backbone	Tuning Strategy	Trainable Params
-M1	bert-base-uncased	Head-only (CLS Linear)	1,538 / 109,483,778 (0.0014%)
-M2	bert-base-uncased	Full Fine-tuning	109,483,778 / 109,483,778 (100%)
-M3	bert-base-uncased	Partial FT (Top-4 layers)	28,353,026 / 109,483,778 (25.897%)
-M4	bert-base-uncased	BitFit (Bias-only)	102,914 / 109,483,778 (0.094%)
-M5	bert-base-uncased	LoRA (r = 4, 8, 16)	약 0.1% ~ 1% 수준
+------------------------------------------------------------
 
-각 방식은 “성능 ↔ 비용” 관점에서 우열이 나뉘며, 학습 유지 비용과 효율성을 정량적으로 비교할 수 있다.
+## 2. 데이터셋 정보
 
-⸻
+• 데이터셋: SST-2 (Stanford Sentiment Treebank v2)  
+• Train 데이터만 사용하여 **8:1:1 비율로** 재분할  
+• 모든 수행 노트북에서 동일한 데이터 분할을 적용하여 재현성 확보
 
-2. 데이터셋
-	•	데이터: SST-2 (Stanford Sentiment Treebank v2)
-	•	로딩: load_dataset("glue", "sst2")
-	•	분할: Train split을 8:1:1 비율로 재분할하여 Train/Validation/Test 생성
-	•	모든 실험 노트북에 동일한 데이터 로딩/분할 코드 포함
 
-별도의 데이터 파일을 저장하지 않으며, Hugging Face 데이터 캐시를 자동 사용한다.
+------------------------------------------------------------
 
-⸻
+## 3. 프로젝트 폴더 구조
 
-3. 폴더 구조
+## 📁 프로젝트 폴더 구조
 
-본 프로젝트는 아래와 같은 구조로 구성되어 있다.
-
+```
 project/
 │
-├── models/                             # 로컬 테스트용 모델 (GitHub에는 빈 폴더)
-│   ├── freeze_model/
-│   ├── full_fine_model/
-│   ├── partial_ft_model/
-│   ├── bitfit_model/
-│   └── lora_model/
+├── models/                     # 모델 저장 폴더
+│   ├── freeze_model/           # Head-only fine-tuning 결과 모델
+│   ├── full_fine_model/        # Full fine-tuning 결과 모델
+│   ├── partial_ft_model/       # Partial (Top-k layers) fine-tuning 모델
+│   ├── bitfit_model/           # Bias-only (BitFit) fine-tuning 모델
+│   └── lora_model/             # LoRA fine-tuning 모델
 │
-├── results/                            # 테스트셋 예측 결과 (CSV)
+├── results/                    # 테스트셋에 대한 예측 결과 CSV 파일
 │   ├── freeze_test_outputs.csv
 │   ├── full_test_outputs.csv
 │   ├── partial_test_outputs.csv
 │   ├── bitfit_test_outputs.csv
 │   └── lora_test_outputs.csv
 │
-├── data/                               # (선택) 원본 데이터 저장용
+├── data/                       # SST-2 원본 데이터 저장 폴더
 │   └── sst2_raw/
 │
-├── notebooks/
-│   ├── freeze.ipynb                    # Head-only Fine-tuning
-│   ├── full_fine.ipynb                 # Full Fine-tuning
-│   ├── partial_ft.ipynb                # Last-k Layers Fine-tuning
-│   ├── bitfit.ipynb                    # BitFit (bias-only)
-│   ├── lora.ipynb                      # LoRA
-│   ├── model_test.ipynb                # 여러 모델 test 평가
-│   └── (각 노트북은 load_dataset + tokenization + training 포함)
+├── notebooks/                  # 개별 실험을 실행 Notebook 파일
+│   ├── freeze.ipynb            # Freeze(Head-only) 실험
+│   ├── full_fine.ipynb         # Full fine-tuning 실험
+│   ├── partial_ft.ipynb        # Partial fine-tuning 실험
+│   ├── bitfit.ipynb            # BitFit 실험
+│   ├── lora.ipynb              # LoRA 실험
+│   └── model_test.ipynb        # 모든 모델을 동일한 testset으로 평가
 │
-├── README.md
-└── requirements.txt
+├── README.md                   
+└── requirements.txt           
+```
 
+------------------------------------------------------------
 
-⸻
+## 4. 폴더 및 파일 설명
 
-4. 각 폴더 및 파일 설명
+📁 **models/**  
+• GitHub에는 파일 용량 문제로 비워둡니다.  
+• Hugging Face Hub에서 모델을 다운로드해 이 폴더에 배치하는 방식입니다.  
+• 각 디렉토리는 해당 파인튜닝 방식의 모델을 저장하기 위한 폴더입니다.
 
-models/
-	•	GitHub에는 용량 문제로 비어 있으며,
-Hugging Face Hub에서 다운로드한 모델을 이 폴더에 배치하여 사용한다.
-	•	각 폴더는 다음 모델을 저장하기 위해 존재한다.
-	•	freeze_model/
-	•	full_fine_model/
-	•	partial_ft_model/
-	•	bitfit_model/
-	•	lora_model/
+📁 **results/**  
+• 각 모델을 동일한 test split에서 평가한 결과(csv)를 저장합니다.  
+• CSV 컬럼: `sentence, gold, pred`
 
-⸻
+📁 **notebooks/  
+각 실험은 독립적인 Jupyter Notebook으로 구성되어 있습니다.
 
-results/
-	•	각 모델을 동일한 test set으로 평가한 결과를 보관
-	•	CSV 구성:
-sentence, gold, pred
+Notebook | 설명
+-------- | ----
+freeze.ipynb | BERT Encoder 동결 + Linear Classifier만 학습
+full_fine.ipynb | BERT 전체 파라미터 학습
+partial_ft.ipynb | 마지막 K개의 encoder layer만 학습
+bitfit.ipynb | Bias-only 튜닝 (BitFit)
+lora.ipynb | LoRA 튜닝 (r = 4, 8, 16 등)
+model_test.ipynb | 저장된 모든 모델을 동일한 test set에 대해 평가
 
-⸻
+------------------------------------------------------------
 
-notebooks/
+## 5. 실행 방법
 
-각 노트북은 독립적으로 실행 가능하도록 구성되어 있다.
+### 1) 패키지 설치
 
-Notebook	설명
-freeze.ipynb	BERT 전체 freeze → 분류기(head)만 학습
-full_fine.ipynb	BERT full fine-tuning
-partial_ft.ipynb	BERT top-k layers fine-tuning
-bitfit.ipynb	Bias-only fine-tuning
-lora.ipynb	LoRA adapter fine-tuning
-model_test.ipynb	모든 모델을 불러와 같은 test 데이터로 평가
-
-
-⸻
-
-5. 실행 방법
-
-1) 패키지 설치
-
+```bash
 pip install -r requirements.txt
+```
+### 2) 개별 실험 수행
+예: Head-only Fine-Tuning → `notebooks/freeze.ipynb`
 
-2) 각 실험 수행
+### 3) 저장된 모델 평가
+`notebooks/model_test.ipynb` 실행
 
-예:
+------------------------------------------------------------
 
-notebooks/freeze.ipynb
+## 6. Hugging Face Hub 모델 다운로드
 
-3) 저장된 모델로 테스트 실행
+각 파인튜닝 방식의 모델은 Hugging Face Hub에 업로드되어 있으며,  
+다운로드 후 `models/` 폴더 내부에 배치하여 사용합니다.
 
-notebooks/model_test.ipynb
+freeze_model:     https://huggingface.co/joononeyyy/freeze-sst2  
+full_fine_model:  https://huggingface.co/joononeyyy/full-sst2  
+partial_ft_model: https://huggingface.co/joononeyyy/partial-sst2  
+bitfit_model:     https://huggingface.co/joononeyyy/bitfit-sst2  
+lora_model:       https://huggingface.co/joononeyyy/lora-sst2  
 
+------------------------------------------------------------
 
-⸻
+## 7. 평가 지표
 
-6. 모델 다운로드 (Hugging Face Hub)
+모든 모델은 동일한 평가 지표로 성능을 비교하였습니다.
 
-아래 모델들은 모두 Hugging Face Hub에 업로드되어 있다.
-원하는 모델을 다운로드하여 /models/ 내부에 넣어 사용한다.
+• Accuracy  
+• Precision (macro)  
+• Recall (macro)  
+• F1-score (macro)
 
-예시 링크(사용자 계정에 맞게 수정):
+------------------------------------------------------------
 
-freeze_model:      https://huggingface.co/<username>/freeze-sst2
-full_fine_model:   https://huggingface.co/<username>/full-sst2
-partial_ft_model:  https://huggingface.co/<username>/partial-sst2
-bitfit_model:      https://huggingface.co/<username>/bitfit-sst2
-lora_model:        https://huggingface.co/<username>/lora-sst2
-
-
-⸻
-
-7. 평가 지표
-
-모든 실험은 아래 네 가지 지표로 평가했다.
-	•	Accuracy
-	•	Precision (macro)
-	•	Recall (macro)
-	•	F1-score (macro)
-
-⸻
-
-원하면 아래 항목도 추가해줄 수 있다:
-	•	최종 성능 비교표 (M1~M5)
-	•	그래프(학습 곡선, 파라미터 대비 성능)
-	•	결론 및 분석 섹션
-	•	추가 개선 방법
-
-말해줘, 바로 추가해줄게!
+본 프로젝트는 BERT의 다양한 파인튜닝 전략을 정량적으로 비교하여  
+"성능 vs 파라미터 효율성" 사이의 관계를 분석하는 데 목적이 있습니다.
