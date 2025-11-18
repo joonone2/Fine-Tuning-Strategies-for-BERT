@@ -133,7 +133,7 @@ lora_model:       https://huggingface.co/joononeyyy/lora-sst2
 ------------------------------------------------------------
 
 ## 8. 성능 요약
-| Model Name        | Fine-tuning Strategy        | Trainable Params (%)       | Test F1  |
+| Model Name        | Fine-tuning Strategy        | Trainable Params (%)       | F1 Score  |
 |-------------------|-----------------------------|-----------------------------|----------|
 | Freeze FT         | Head-only (Classifier only) | 0.0014%                     | 0.74  |
 | Full Fine-tune     | Full Parameter Training     | 100%                        | 0.96   |
