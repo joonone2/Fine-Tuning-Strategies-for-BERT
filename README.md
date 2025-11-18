@@ -132,5 +132,10 @@ lora_model:       https://huggingface.co/joononeyyy/lora-sst2
 
 ------------------------------------------------------------
 
-본 프로젝트는 BERT의 다양한 파인튜닝 전략을 정량적으로 비교하여  
-"성능 vs 파라미터 효율성" 사이의 관계를 분석하는 데 목적이 있습니다.
+## 8. 성능 요약
+| Model Name        | Fine-tuning Strategy        | Trainable Params (%)       | Test F1  |
+|-------------------|-----------------------------|-----------------------------|----------|
+| Freeze FT         | Head-only (Classifier only) | 0.0014%                     | 0.74  |
+| Full Fine-tune     | Full Parameter Training     | 100%                        | 0.96   |
+| Partial FT         | Top-4 Layers Only           | 25.897%                     | 0.94   |
+| BitFit             | Bias-only Training          | 0.094%                      | 0.93   |
