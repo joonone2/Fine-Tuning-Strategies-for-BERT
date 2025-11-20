@@ -89,8 +89,7 @@
 ---
 ## 4. 모델 아키텍처 
 
-
-![BERT Architecture](https://github.com/user-attachments/assets/932d1c1b-cd05-4020-8731-4baddc865c20)
+![BERT Architecture](https://github.com/user-attachments/assets/5c3a23a1-f585-4c5b-acf2-0a6bd0f8e6ee) 
 
 ------------------------------------------------------------
 ## 5. 실험 결과
