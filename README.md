@@ -9,13 +9,13 @@
 
 아래는 본 프로젝트에서 실험한 파인튜닝 방식과 각 모델의 **학습 가능한 파라미터 수(Trainable Params)** 정리입니다.
 
-Model ID | Backbone | Tuning Strategy | Trainable Params
--------- | -------- | --------------- | ------------------------------
-M1 | bert-base-uncased | Head-only (CLS Linear Only) | 1,538 / 109,483,778 (0.0014%)
-M2 | bert-base-uncased | Full Fine-tuning | 109,483,778 / 109,483,778 (100%)
-M3 | bert-base-uncased | Partial FT (Top-4 layers) | 28,353,026 / 109,483,778 (25.897%)
-M4 | bert-base-uncased | BitFit (Bias-only Tuning) | 102,914 / 109,483,778 (0.094%)
-M5 | bert-base-uncased | LoRA (r = 4 / 8 / 16) | 약 0.1% ~ 1%
+| Model Name        | Backbone             | Fine-tuning Strategy        | Trainable Params (%) |
+|-------------------|-----------------------|-----------------------------|-----------------------|
+| Freeze FT         | bert-base-uncased     | Head-only (Classifier only) | 0.0014%               |
+| Full Fine-tune     | bert-base-uncased     | Full Parameter Training     | 100%                  |
+| Partial FT         | bert-base-uncased     | Top-4 Layers Only           | 25.897%               |
+| BitFit             | bert-base-uncased     | Bias-only Training          | 0.094%                |
+| LoRA               | bert-base-uncased     | Low-Rank Adaptation (r=8)   | 1.209956%             |
 
 
 
@@ -29,10 +29,81 @@ M5 | bert-base-uncased | LoRA (r = 4 / 8 / 16) | 약 0.1% ~ 1%
 
 
 ------------------------------------------------------------
+## 3. 실험 방법 (Experiment Method)
 
-## 3. 프로젝트 폴더 구조
+본 프로젝트에서는 모든 파인튜닝 기법을 공정하게 비교하기 위해, 동일한 데이터 분할, 동일한 백본(BERT-base-uncased), 동일한 평가 방식(F1-score 중심)을 사용했습니다. 아래는 전체 실험 절차입니다.
 
-## 📁 프로젝트 폴더 구조
+---
+
+### 1) 데이터 구성
+- Hugging Face SST-2 데이터셋의 **train split만 로드**
+- 8 : 1 : 1 비율로 **train / validation / test** 재구성
+- 모든 실험에서 동일한 분할 사용
+
+---
+
+### 2) 하이퍼파라미터 탐색
+각 파인튜닝 방식은 **Random Search**를 사용하여 최적 설정을 탐색했습니다.
+
+탐색 범위:
+- learning rate: 2e-5, 3e-5, 5e-5
+- batch size: 16, 32, 64
+- dropout: 0.1, 0.2
+- epochs: 2, 3, 4
+
+여러 trial 중 **validation Acc가 가장 높은 모델**을 최종 결과 비교에 사용했습니다.
+
+---
+
+### 3) 기법별 추가 설정
+
+#### ▷ Freeze FT
+- BERT 인코더 전체 freeze
+- classifier(Linear)만 학습
+
+#### ▷ Full Fine-Tuning
+- 모든 레이어 파라미터 학습
+
+#### ▷ Partial Fine-Tuning
+-	BERT 인코더의 일부 레이어만 학습하도록 설정
+-	k = {2, 4} 두 가지 설정 모두 실험
+- 두 실험 중 k = 4가 더 높은 Validation 성능을 보여 최종 모델로 선택
+
+#### ▷ BitFit
+- 모든 레이어의 **bias 파라미터**만 학습
+
+#### ▷ LoRA
+- Attention의 Q, V projection에 저랭크 모듈 적용
+- rank **r = 4, 8, 16** 각각 실험
+- 그중 **r = 8 모델**을 최종 LoRA 결과로 사용
+
+---
+
+### 4) 평가 지표
+모든 모델은 동일한 test split으로 평가했으며, 다음 지표를 계산했습니다.
+- Accuracy
+- Precision (macro)
+- Recall (macro)
+- **F1-score (macro)** → 최종 비교 기준으로 사용
+
+---
+## 4. 모델 아키텍처 
+
+
+![BERT Architecture](https://github.com/user-attachments/assets/932d1c1b-cd05-4020-8731-4baddc865c20)
+
+------------------------------------------------------------
+## 5. 실험 결과
+| Model Name        | Fine-tuning Strategy        | Trainable Params (%)       | F1 Score  |
+|-------------------|-----------------------------|-----------------------------|----------|
+| Freeze FT         | Head-only (Classifier only) | 0.0014%                     | 0.74  |
+| Full Fine-tune     | Full Parameter Training     | 100%                        | 0.96   |
+| Partial FT         | Top-4 Layers Only           | 25.897%                     | 0.94   |
+| BitFit             | Bias-only Training          | 0.094%                      | 0.93   |
+| LoRA              | Low-Rank Adaptation         | 1.209%                   | 0.92 |
+
+![Test F1-scores](https://github.com/user-attachments/assets/c84fe4a4-8f3a-4974-9d02-236a033ddb4f)
+## 6. 프로젝트 폴더 구조
 
 ```
 project/
@@ -68,7 +139,7 @@ project/
 
 ------------------------------------------------------------
 
-## 4. 폴더 및 파일 설명
+## 7. 폴더 및 파일 설명
 
 📁 **models/**  
 • GitHub에는 파일 용량 문제로 비워둡니다.  
@@ -79,8 +150,8 @@ project/
 • 각 모델을 동일한 test split에서 평가한 결과(csv)를 저장합니다.  
 • CSV 컬럼: `sentence, gold, pred`
 
-📁 **notebooks/  
-각 실험은 독립적인 Jupyter Notebook으로 구성되어 있습니다.
+📁 **notebooks/**  
+
 
 Notebook | 설명
 -------- | ----
@@ -93,7 +164,7 @@ model_test.ipynb | 저장된 모든 모델을 동일한 test set에 대해 평�
 
 ------------------------------------------------------------
 
-## 5. 실행 방법
+## 8. 실행 방법
 
 ### 1) 패키지 설치
 
@@ -108,34 +179,47 @@ pip install -r requirements.txt
 
 ------------------------------------------------------------
 
-## 6. Hugging Face Hub 모델 다운로드
+## 9. Hugging Face Hub 모델 다운로드
 
-각 파인튜닝 방식의 모델은 Hugging Face Hub에 업로드되어 있으며,  
-다운로드 후 `models/` 폴더 내부에 배치하여 사용합니다.
 
-freeze_model:     https://huggingface.co/joononeyyy/freeze-sst2  
-full_fine_model:  https://huggingface.co/joononeyyy/full-sst2  
-partial_ft_model: https://huggingface.co/joononeyyy/partial-sst2  
-bitfit_model:     https://huggingface.co/joononeyyy/bitfit-sst2  
-lora_model:       https://huggingface.co/joononeyyy/lora-sst2  
+📥 **예시: 모델 다운로드 방법**
+
+
+```python
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model = AutoModelForSequenceClassification.from_pretrained(
+    "joononeyyy/freeze-sst2"
+)
+tokenizer = AutoTokenizer.from_pretrained(
+    "joononeyyy/freeze-sst2"
+)
+
+print("Model and tokenizer loaded successfully!")
+```
+
+필요하신 경우 모델 이름만 바꿔서 사용할 수 있습니다:
+
+- Freeze FT 모델  
+  `joononeyyy/freeze-sst2`
+
+- Full Fine-tuning 모델  
+  `joononeyyy/full-sst2`
+
+- Partial Fine-tuning 모델  
+  `joononeyyy/partial-sst2`
+
+- BitFit 모델  
+  `joononeyyy/bitfit-sst2`
+
+- LoRA 모델  
+  `joononeyyy/lora-sst2`
+
+
+
+
 
 ------------------------------------------------------------
 
-## 7. 평가 지표
 
-모든 모델은 동일한 평가 지표로 성능을 비교하였습니다.
 
-• Accuracy  
-• Precision (macro)  
-• Recall (macro)  
-• F1-score (macro)
-
-------------------------------------------------------------
-
-## 8. 성능 요약
-| Model Name        | Fine-tuning Strategy        | Trainable Params (%)       | F1 Score  |
-|-------------------|-----------------------------|-----------------------------|----------|
-| Freeze FT         | Head-only (Classifier only) | 0.0014%                     | 0.74  |
-| Full Fine-tune     | Full Parameter Training     | 100%                        | 0.96   |
-| Partial FT         | Top-4 Layers Only           | 25.897%                     | 0.94   |
-| BitFit             | Bias-only Training          | 0.094%                      | 0.93   |
