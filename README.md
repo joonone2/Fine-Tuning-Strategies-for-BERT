@@ -190,10 +190,10 @@ pip install -r requirements.txt
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 model = AutoModelForSequenceClassification.from_pretrained(
-    "joononeyyy/freeze-sst2"
+    "joononeyyy/bert-sst2-freeze"
 )
 tokenizer = AutoTokenizer.from_pretrained(
-    "joononeyyy/freeze-sst2"
+    "joononeyyy/bert-sst2-freeze"
 )
 
 print("Model and tokenizer loaded successfully!")
@@ -202,19 +202,19 @@ print("Model and tokenizer loaded successfully!")
 필요하신 경우 모델 이름만 바꿔서 사용할 수 있습니다:
 
 - Freeze FT 모델  
-  `joononeyyy/freeze-sst2`
+  `joononeyyy/bert-sst2-freeze`
 
 - Full Fine-tuning 모델  
-  `joononeyyy/full-sst2`
+  `joononeyyy/bert-sst2-full`
 
 - Partial Fine-tuning 모델  
-  `joononeyyy/partial-sst2`
+  `joononeyyy/bert-sst2-partial`
 
 - BitFit 모델  
-  `joononeyyy/bitfit-sst2`
+  `joononeyyy/bert-sst2-bitfit`
 
 - LoRA 모델  
-  `joononeyyy/lora-sst2`
+  `joononeyyy/bert-sst2-lora`
 
 
 
