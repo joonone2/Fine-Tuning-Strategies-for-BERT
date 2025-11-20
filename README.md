@@ -96,11 +96,11 @@
 ## 5. 실험 결과
 | Model Name        | Fine-tuning Strategy        | Trainable Params (%)       | F1 Score  |
 |-------------------|-----------------------------|-----------------------------|----------|
-| Freeze FT         | Head-only (Classifier only) | 0.0014%                     | 0.74  |
-| Full Fine-tune     | Full Parameter Training     | 100%                        | 0.96   |
+| Freeze FT         | Head-only (Classifier only) | 0.0014%                     | 0.72  |
+| Full Fine-tune     | Full Parameter Training     | 100%                        | 0.95   |
 | Partial FT         | Top-4 Layers Only           | 25.897%                     | 0.94   |
 | BitFit             | Bias-only Training          | 0.094%                      | 0.93   |
-| LoRA              | Low-Rank Adaptation         | 1.209%                   | 0.92 |
+| LoRA              | Low-Rank Adaptation         | 1.209%                   | 0.91 |
 
 ![Test F1-scores](https://github.com/user-attachments/assets/64682f16-f2f1-44b2-bfc7-40d1cd48ede3)
 ## 6. 프로젝트 폴더 구조
@@ -108,12 +108,6 @@
 ```
 project/
 │
-├── models/                     # 모델 저장 폴더
-│   ├── freeze_model/           # Head-only fine-tuning 결과 모델
-│   ├── full_fine_model/        # Full fine-tuning 결과 모델
-│   ├── partial_ft_model/       # Partial (Top-k layers) fine-tuning 모델
-│   ├── bitfit_model/           # Bias-only (BitFit) fine-tuning 모델
-│   └── lora_model/             # LoRA fine-tuning 모델
 │
 ├── results/                    # 테스트셋에 대한 예측 결과 CSV 파일
 │   ├── freeze_test_outputs.csv
@@ -132,7 +126,7 @@ project/
 │   ├── partial_ft.ipynb        # Partial fine-tuning 실험
 │   ├── bitfit.ipynb            # BitFit 실험
 │   ├── lora.ipynb              # LoRA 실험
-│   └── model_test.ipynb        # 모든 모델을 동일한 testset으로 평가
+│   └── test_models.ipynb       # 모든 모델을 동일한 testset으로 평가
 │
 ├── README.md                   
 └── requirements.txt           
@@ -141,11 +135,6 @@ project/
 ------------------------------------------------------------
 
 ## 7. 폴더 및 파일 설명
-
-📁 **models/**  
-• GitHub에는 파일 용량 문제로 비워둡니다.  
-• Hugging Face Hub에서 모델을 다운로드해 이 폴더에 배치하는 방식입니다.  
-• 각 디렉토리는 해당 파인튜닝 방식의 모델을 저장하기 위한 폴더입니다.
 
 📁 **results/**  
 • 각 모델을 동일한 test split에서 평가한 결과(csv)를 저장합니다.  
