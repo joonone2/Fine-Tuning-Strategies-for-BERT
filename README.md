@@ -120,7 +120,8 @@ project/
 │   ├── full_test_outputs.csv
 │   ├── partial_test_outputs.csv
 │   ├── bitfit_test_outputs.csv
-│   └── lora_test_outputs.csv
+|   ├── lora_test_outputs.csv
+│   └── model_summary.csv
 │
 ├── data/                       # SST-2 원본 데이터 저장 폴더
 │   └── sst2_raw/
