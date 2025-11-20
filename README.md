@@ -102,7 +102,7 @@
 | BitFit             | Bias-only Training          | 0.094%                      | 0.93   |
 | LoRA              | Low-Rank Adaptation         | 1.209%                   | 0.92 |
 
-![Test F1-scores](https://github.com/user-attachments/assets/c84fe4a4-8f3a-4974-9d02-236a033ddb4f)
+![Test F1-scores](https://github.com/user-attachments/assets/64682f16-f2f1-44b2-bfc7-40d1cd48ede3)
 ## 6. 프로젝트 폴더 구조
 
 ```
