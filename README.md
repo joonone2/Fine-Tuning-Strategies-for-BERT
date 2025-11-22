@@ -89,7 +89,8 @@
 ---
 ## 4. 모델 아키텍처 
 
-![BERT Architecture](https://github.com/user-attachments/assets/d06dbfe8-1632-448e-8fd8-304bef007154) 
+<img src="https://github.com/user-attachments/assets/d06dbfe8-1632-448e-8fd8-304bef007154" width="800px">
+
 
 ------------------------------------------------------------
 ## 5. 실험 결과
@@ -101,7 +102,10 @@
 | BitFit             | Bias-only Training          | 0.094%                      | 0.93   |
 | LoRA              | Low-Rank Adaptation         | 1.209%                   | 0.91 |
 
-![Test F1-scores](https://github.com/user-attachments/assets/249a51d3-6d25-47b8-8f09-9ca114cc4515)
+<img src="https://github.com/user-attachments/assets/249a51d3-6d25-47b8-8f09-9ca114cc4515" width="500px">
+
+
+------------------------------------------------------------
 ## 6. 프로젝트 폴더 구조
 
 ```
